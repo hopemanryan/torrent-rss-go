@@ -4,6 +4,8 @@ go 1.17
 
 require github.com/anacrolix/torrent v1.46.0
 
+require github.com/jcelliott/lumber v0.0.0-20160324203708-dd349441af25 // indirect
+
 require (
 	crawshaw.io/sqlite v0.3.3-0.20210127221821-98b1f83c5508 // indirect
 	github.com/PuerkitoBio/goquery v1.8.0 // indirect
@@ -75,6 +77,7 @@ require (
 	github.com/mschoch/smat v0.2.0 // indirect
 	github.com/multiformats/go-multihash v0.2.1 // indirect
 	github.com/multiformats/go-varint v0.0.6 // indirect
+	github.com/nanobox-io/golang-scribble v0.0.0-20190309225732-aa3e7c118975
 	github.com/nictuku/dht v0.0.0-20201226073453-fd1c1dd3d66a // indirect
 	github.com/nictuku/nettools v0.0.0-20150117095333-8867a2107ad3 // indirect
 	github.com/nsf/termbox-go v1.1.1 // indirect

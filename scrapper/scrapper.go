@@ -3,13 +3,16 @@ package rssScrapper
 import (
 	"fmt"
 	"log"
+	"regexp"
 	"strings"
 
 	"github.com/anacrolix/torrent"
+	localDB "github.com/hopemanryan/torrent-rss/db"
 
 	"github.com/gocolly/colly"
 )
 
+var limit = 2
 var baseURL = "https://www.1377x.to"
 
 type Scrapper struct {
@@ -33,37 +36,13 @@ func NewScrapper() *Scrapper {
 	return &scrapper
 }
 
-// func addListeners(collyInstance *colly.Collector, tc *torrent.Client) {
-
-// 	collyInstance.OnHTML(".featured-list", func(e *colly.HTMLElement) {
-// 		links := e.ChildAttrs("a", "href")
-
-// 		for _, link := range links {
-// 			if strings.Contains(link, "/torrent") {
-// 				collyInstance.Visit(fmt.Sprintf("%s/%s", baseURL, link))
-// 			}
-// 		}
-// 	})
-
-// 	collyInstance.OnHTML(".torrentdown1", func(e *colly.HTMLElement) {
-// 		magent := e.Attr("href")
-// 		t, _ := tc.AddMagnet(magent)
-// 		t.DownloadAll()
-
-// 	})
-
-// 	collyInstance.OnRequest(func(r *colly.Request) {
-// 		fmt.Println("Visiting", r.URL)
-// 	})
-// }
-
 func (s *Scrapper) AddListeners() {
 	var count = 0
 	s.browser.OnHTML(".featured-list", func(e *colly.HTMLElement) {
 		links := e.ChildAttrs("a", "href")
 
 		for _, link := range links {
-			if strings.Contains(link, "/torrent") {
+			if strings.Contains(link, "/torrent") && count < limit {
 				s.browser.Visit(fmt.Sprintf("%s/%s", baseURL, link))
 			}
 		}
@@ -71,8 +50,7 @@ func (s *Scrapper) AddListeners() {
 
 	s.browser.OnHTML(".torrentdown1", func(e *colly.HTMLElement) {
 		magent := e.Attr("href")
-		if count < 2 {
-			count = count + 1
+		if count < limit {
 			s.allLinks = append(s.allLinks, magent)
 		}
 
@@ -82,7 +60,7 @@ func (s *Scrapper) AddListeners() {
 		fmt.Println("Visiting", r.URL)
 	})
 }
-func (s *Scrapper) StartScrap() {
+func (s *Scrapper) StartScrap(db *localDB.DB) {
 	s.browser.Visit(s.url)
 
 	defer s.torrectClient.Close()
@@ -90,9 +68,27 @@ func (s *Scrapper) StartScrap() {
 	for _, link := range s.allLinks {
 		t, _ := s.torrectClient.AddMagnet(link)
 		<-t.GotInfo()
-		t.DownloadAll()
+		info := cleanName(t.Info().Name)
+
+		// check why file is downloading even though it returns true
+		isDownloaded := db.CheckDownloadedName(info)
+		if !isDownloaded {
+			db.SaveFile(info, t.Info().Name)
+			t.DownloadAll()
+
+		} else {
+			t.DisallowDataDownload()
+		}
+
 	}
 	s.torrectClient.WaitAll()
+
 	log.Print("Files Downloaded")
 
+}
+
+func cleanName(dirtyName string) string {
+	re := regexp.MustCompile(`S(\d+)E(\d+)`)
+	split := re.Split(dirtyName, -1)
+	return split[0]
 }
