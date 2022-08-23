@@ -1,0 +1,11 @@
+services:
+  scrapper:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./db:/db
+      - ./download:/download
+    environment: 
+        - TORRENT_LIMIT=2
+

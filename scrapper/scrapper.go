@@ -3,7 +3,9 @@ package rssScrapper
 import (
 	"fmt"
 	"log"
+	"os"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -12,7 +14,8 @@ import (
 	localDB "github.com/hopemanryan/torrent-rss/db"
 )
 
-var limit = 2
+var limit = 20
+
 var baseURL = "https://www.1377x.to"
 
 type Scrapper struct {
@@ -23,6 +26,16 @@ type Scrapper struct {
 }
 
 func NewScrapper() *Scrapper {
+	osLimit := os.Getenv("TORRENT_LIMIT")
+
+	if osLimit != "" {
+		i, err := strconv.Atoi(osLimit)
+		if err == nil {
+			limit = i
+		}
+	}
+
+	println(limit)
 	scrapInstnace := *colly.NewCollector()
 
 	defaultCOnfig := torrent.NewDefaultClientConfig()

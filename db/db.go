@@ -1,6 +1,8 @@
 package localDB
 
 import (
+	"time"
+
 	scribble "github.com/nanobox-io/golang-scribble"
 )
 
@@ -14,6 +16,7 @@ type FileItem struct {
 	Name             string
 	OrigianlFileName string
 	FileMoved        bool
+	Date             time.Time
 }
 
 func NewDb() *DB {
@@ -36,5 +39,9 @@ func (db *DB) CheckDownloadedName(name string) bool {
 }
 
 func (db *DB) SaveFile(filename string, origianlFileName string) {
-	db.storage.Write(tableName, filename, FileItem{Name: filename, OrigianlFileName: origianlFileName})
+	db.storage.Write(tableName, filename, FileItem{
+		Name:             filename,
+		OrigianlFileName: origianlFileName,
+		Date:             time.Now(),
+	})
 }
