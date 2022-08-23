@@ -5,32 +5,34 @@ import (
 	"log"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/anacrolix/torrent"
-	localDB "github.com/hopemanryan/torrent-rss/db"
-
 	"github.com/gocolly/colly"
+	localDB "github.com/hopemanryan/torrent-rss/db"
 )
 
 var limit = 2
 var baseURL = "https://www.1377x.to"
 
 type Scrapper struct {
-	url           string
-	browser       *colly.Collector
-	torrectClient *torrent.Client
-	allLinks      []string
+	Url           string
+	Browser       *colly.Collector
+	TorrectClient *torrent.Client
+	AllLinks      []string
 }
 
 func NewScrapper() *Scrapper {
 	scrapInstnace := *colly.NewCollector()
 
-	c, _ := torrent.NewClient(nil)
+	defaultCOnfig := torrent.NewDefaultClientConfig()
+	defaultCOnfig.DataDir = "./download"
+	c, _ := torrent.NewClient(defaultCOnfig)
 
 	scrapper := Scrapper{
-		url:           fmt.Sprintf("%s/trending/w/tv/", baseURL),
-		browser:       &scrapInstnace,
-		torrectClient: c,
+		Url:           fmt.Sprintf("%s/trending/w/tv/", baseURL),
+		Browser:       &scrapInstnace,
+		TorrectClient: c,
 	}
 
 	return &scrapper
@@ -38,35 +40,33 @@ func NewScrapper() *Scrapper {
 
 func (s *Scrapper) AddListeners() {
 	var count = 0
-	s.browser.OnHTML(".featured-list", func(e *colly.HTMLElement) {
+	s.Browser.OnHTML(".featured-list", func(e *colly.HTMLElement) {
 		links := e.ChildAttrs("a", "href")
 
 		for _, link := range links {
-			if strings.Contains(link, "/torrent") && count < limit {
-				s.browser.Visit(fmt.Sprintf("%s/%s", baseURL, link))
+			if strings.Contains(link, "/torrent") {
+				s.Browser.Visit(fmt.Sprintf("%s/%s", baseURL, link))
 			}
 		}
 	})
 
-	s.browser.OnHTML(".torrentdown1", func(e *colly.HTMLElement) {
+	s.Browser.OnHTML(".torrentdown1", func(e *colly.HTMLElement) {
 		magent := e.Attr("href")
 		if count < limit {
-			s.allLinks = append(s.allLinks, magent)
+			count++
+			s.AllLinks = append(s.AllLinks, magent)
 		}
 
 	})
 
-	s.browser.OnRequest(func(r *colly.Request) {
-		fmt.Println("Visiting", r.URL)
-	})
 }
 func (s *Scrapper) StartScrap(db *localDB.DB) {
-	s.browser.Visit(s.url)
+	s.Browser.Visit(s.Url)
 
-	defer s.torrectClient.Close()
+	defer s.TorrectClient.Close()
 
-	for _, link := range s.allLinks {
-		t, _ := s.torrectClient.AddMagnet(link)
+	for _, link := range s.AllLinks {
+		t, _ := s.TorrectClient.AddMagnet(link)
 		<-t.GotInfo()
 		info := cleanName(t.Info().Name)
 
@@ -76,12 +76,17 @@ func (s *Scrapper) StartScrap(db *localDB.DB) {
 			db.SaveFile(info, t.Info().Name)
 			t.DownloadAll()
 
-		} else {
-			t.DisallowDataDownload()
+			fmt.Printf("Total Length: %s", t.Info().TotalLength())
+			for t.BytesCompleted() != t.Info().TotalLength() {
+				fmt.Printf("%d / %d \n", t.BytesCompleted(), t.Info().TotalLength())
+				time.Sleep(time.Second * 5)
+
+			}
+
 		}
 
 	}
-	s.torrectClient.WaitAll()
+	s.TorrectClient.WaitAll()
 
 	log.Print("Files Downloaded")
 

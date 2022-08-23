@@ -1,8 +1,6 @@
 package localDB
 
 import (
-	"fmt"
-
 	scribble "github.com/nanobox-io/golang-scribble"
 )
 
@@ -31,7 +29,6 @@ func NewDb() *DB {
 func (db *DB) CheckDownloadedName(name string) bool {
 	file := FileItem{}
 
-	fmt.Printf("%s", name)
 	db.storage.Read(tableName, name, &file)
 
 	return file.Name != ""
