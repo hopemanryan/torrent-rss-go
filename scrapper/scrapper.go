@@ -22,7 +22,7 @@ var defaultDownloadDir = "./download"
 type Scrapper struct {
 	Url           string
 	Browser       *colly.Collector
-	TorrectClient *torrent.Client
+	TorrentClient *torrent.Client
 	AllLinks      []string
 }
 
@@ -39,7 +39,7 @@ func NewScrapper() *Scrapper {
 	scrapper := Scrapper{
 		Url:           fmt.Sprintf("%s/trending/w/tv/", baseURL),
 		Browser:       &scrapInstance,
-		TorrectClient: c,
+		TorrentClient: c,
 	}
 
 	return &scrapper
@@ -73,10 +73,10 @@ func (s *Scrapper) StartScrap(db *localDB.DB) {
 		return
 	}
 
-	defer s.TorrectClient.Close()
+	defer s.TorrentClient.Close()
 
 	for _, link := range s.AllLinks {
-		t, _ := s.TorrectClient.AddMagnet(link)
+		t, _ := s.TorrentClient.AddMagnet(link)
 		<-t.GotInfo()
 		info := cleanName(t.Info().Name)
 
@@ -96,7 +96,7 @@ func (s *Scrapper) StartScrap(db *localDB.DB) {
 		}
 
 	}
-	s.TorrectClient.WaitAll()
+	s.TorrentClient.WaitAll()
 
 	log.Print("Files Downloaded")
 
