@@ -1,6 +1,7 @@
 package localDB
 
 import (
+	"log"
 	"time"
 
 	scribble "github.com/nanobox-io/golang-scribble"
@@ -44,4 +45,6 @@ func (db *DB) SaveFile(filename string, origianlFileName string) {
 		OrigianlFileName: origianlFileName,
 		Date:             time.Now(),
 	})
+	log.Printf("Saving new file: %s", filename)
+
 }

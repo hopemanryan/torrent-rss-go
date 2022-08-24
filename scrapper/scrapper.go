@@ -95,15 +95,15 @@ func (s *Scrapper) StartScrap(db *localDB.DB) {
 			for t.BytesCompleted() != t.Info().TotalLength() {
 				fmt.Printf("%d / %d \n", t.BytesCompleted(), t.Info().TotalLength())
 				time.Sleep(time.Second * 5)
-
 			}
-
 		}
 
 	}
 	s.TorrentClient.WaitAll()
 
 	log.Print("Files Downloaded")
+	s.AllLinks = nil
+	log.Print("Links have been clearedm")
 
 }
 
