@@ -6,6 +6,8 @@ services:
     volumes:
       - asset-volume:/app/download
       - db:/app/db/data
+    environment:
+      - QUIALITY=1080p  
 
 
   plex:

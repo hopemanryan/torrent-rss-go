@@ -16,8 +16,10 @@ import (
 
 var limit = 20
 var TorrentLimitToken = "TORRENT_LIMIT"
+var VideoQualityToken = "QUIALITY"
 var baseURL = "https://www.1377x.to"
 var defaultDownloadDir = "./download"
+var videoQueality string
 
 type Scrapper struct {
 	Url           string
@@ -29,6 +31,7 @@ type Scrapper struct {
 func NewScrapper() *Scrapper {
 
 	getLimitFromEnv()
+	getVideoQualityFromEnv()
 
 	println(limit)
 
@@ -54,6 +57,9 @@ func (s *Scrapper) AddListeners() {
 
 		for _, link := range links {
 			if strings.Contains(link, "/torrent") {
+				if videoQueality != "" && !strings.Contains(link, videoQueality) {
+					return
+				}
 				s.Browser.Visit(fmt.Sprintf("%s/%s", baseURL, link))
 			}
 		}
@@ -116,4 +122,8 @@ func getLimitFromEnv() {
 			limit = i
 		}
 	}
+}
+
+func getVideoQualityFromEnv() {
+	videoQueality = os.Getenv(VideoQualityToken)
 }
