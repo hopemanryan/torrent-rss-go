@@ -5,6 +5,7 @@ services:
       dockerfile: Dockerfile
     volumes:
       - asset-volume:/app/download
+      - db:/app/db/data
 
 
   plex:
@@ -35,5 +36,6 @@ services:
 
 volumes:
   asset-volume: 
+  db:
 
 
