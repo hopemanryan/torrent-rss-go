@@ -30,6 +30,8 @@ func NewScrapper() *Scrapper {
 
 	getLimitFromEnv()
 
+	println(limit)
+
 	scrapInstance := *colly.NewCollector()
 
 	defaultConfig := torrent.NewDefaultClientConfig()
@@ -60,7 +62,7 @@ func (s *Scrapper) AddListeners() {
 	s.Browser.OnHTML(".torrentdown1", func(e *colly.HTMLElement) {
 		magent := e.Attr("href")
 		if count < limit {
-			count++
+			count = count + 1
 			s.AllLinks = append(s.AllLinks, magent)
 		}
 
@@ -68,14 +70,11 @@ func (s *Scrapper) AddListeners() {
 
 }
 func (s *Scrapper) StartScrap(db *localDB.DB) {
-	err := s.Browser.Visit(s.Url)
-	if err == nil {
-		return
-	}
-
+	s.Browser.Visit(s.Url)
 	defer s.TorrentClient.Close()
 
 	for _, link := range s.AllLinks {
+		print(link)
 		t, _ := s.TorrentClient.AddMagnet(link)
 		<-t.GotInfo()
 		info := cleanName(t.Info().Name)
@@ -113,7 +112,7 @@ func getLimitFromEnv() {
 
 	if osLimit != "" {
 		i, err := strconv.Atoi(osLimit)
-		if err == nil {
+		if err != nil {
 			limit = i
 		}
 	}
