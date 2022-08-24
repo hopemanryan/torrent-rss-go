@@ -15,8 +15,9 @@ import (
 )
 
 var limit = 20
-
+var TorrentLimitToken = "TORRENT_LIMIT"
 var baseURL = "https://www.1377x.to"
+var defaultDownloadDir = "./download"
 
 type Scrapper struct {
 	Url           string
@@ -26,25 +27,18 @@ type Scrapper struct {
 }
 
 func NewScrapper() *Scrapper {
-	osLimit := os.Getenv("TORRENT_LIMIT")
 
-	if osLimit != "" {
-		i, err := strconv.Atoi(osLimit)
-		if err == nil {
-			limit = i
-		}
-	}
+	getLimitFromEnv()
 
-	println(limit)
-	scrapInstnace := *colly.NewCollector()
+	scrapInstance := *colly.NewCollector()
 
-	defaultCOnfig := torrent.NewDefaultClientConfig()
-	defaultCOnfig.DataDir = "./download"
-	c, _ := torrent.NewClient(defaultCOnfig)
+	defaultConfig := torrent.NewDefaultClientConfig()
+	defaultConfig.DataDir = defaultDownloadDir
+	c, _ := torrent.NewClient(defaultConfig)
 
 	scrapper := Scrapper{
 		Url:           fmt.Sprintf("%s/trending/w/tv/", baseURL),
-		Browser:       &scrapInstnace,
+		Browser:       &scrapInstance,
 		TorrectClient: c,
 	}
 
@@ -74,7 +68,10 @@ func (s *Scrapper) AddListeners() {
 
 }
 func (s *Scrapper) StartScrap(db *localDB.DB) {
-	s.Browser.Visit(s.Url)
+	err := s.Browser.Visit(s.Url)
+	if err == nil {
+		return
+	}
 
 	defer s.TorrectClient.Close()
 
@@ -89,7 +86,7 @@ func (s *Scrapper) StartScrap(db *localDB.DB) {
 			db.SaveFile(info, t.Info().Name)
 			t.DownloadAll()
 
-			fmt.Printf("Total Length: %s", t.Info().TotalLength())
+			fmt.Printf("Total Length: %d", t.Info().TotalLength())
 			for t.BytesCompleted() != t.Info().TotalLength() {
 				fmt.Printf("%d / %d \n", t.BytesCompleted(), t.Info().TotalLength())
 				time.Sleep(time.Second * 5)
@@ -109,4 +106,15 @@ func cleanName(dirtyName string) string {
 	re := regexp.MustCompile(`S(\d+)E(\d+)`)
 	split := re.Split(dirtyName, -1)
 	return split[0]
+}
+
+func getLimitFromEnv() {
+	osLimit := os.Getenv(TorrentLimitToken)
+
+	if osLimit != "" {
+		i, err := strconv.Atoi(osLimit)
+		if err == nil {
+			limit = i
+		}
+	}
 }
