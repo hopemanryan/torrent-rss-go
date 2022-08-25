@@ -80,15 +80,16 @@ func (s *Scrapper) StartScrap(db *localDB.DB) {
 	defer s.TorrentClient.Close()
 
 	for _, link := range s.AllLinks {
-		print(link)
 		t, _ := s.TorrentClient.AddMagnet(link)
 		<-t.GotInfo()
 		info := cleanName(t.Info().Name)
-
+		re, _ := regexp.Compile(`S\d\dE\d\d`)
+		seasonAndEpisode := re.FindString(t.Info().Name)
 		// check why file is downloading even though it returns true
-		isDownloaded := db.CheckDownloadedName(info)
+		isDownloaded := db.CheckDownloadedName(info, seasonAndEpisode)
+
 		if !isDownloaded {
-			db.SaveFile(info, t.Info().Name)
+			db.SaveFile(info, t.Info().Name, seasonAndEpisode)
 			t.DownloadAll()
 
 			fmt.Printf("Total Length: %d", t.Info().TotalLength())

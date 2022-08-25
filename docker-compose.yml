@@ -8,6 +8,7 @@ services:
       - db:/app/db/data
     environment:
       - QUIALITY=1080p  
+      - TORRENT_LIMIT=3
 
 
   plex:

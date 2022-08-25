@@ -1,7 +1,9 @@
 package localDB
 
 import (
+	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	scribble "github.com/nanobox-io/golang-scribble"
@@ -18,6 +20,7 @@ type FileItem struct {
 	OrigianlFileName string
 	FileMoved        bool
 	Date             time.Time
+	SeasonAndEpisode string
 }
 
 func NewDb() *DB {
@@ -30,18 +33,21 @@ func NewDb() *DB {
 	return &newDb
 }
 
-func (db *DB) CheckDownloadedName(name string) bool {
+func (db *DB) CheckDownloadedName(name string, seasonAndEpisode string) bool {
 	file := FileItem{}
+	parsedFileName := strings.ReplaceAll(name, " ", ".")
 
-	db.storage.Read(tableName, name, &file)
+	db.storage.Read(tableName, fmt.Sprintf("%s_%s", parsedFileName, seasonAndEpisode), &file)
 
 	return file.Name != ""
 
 }
 
-func (db *DB) SaveFile(filename string, origianlFileName string) {
-	db.storage.Write(tableName, filename, FileItem{
-		Name:             filename,
+func (db *DB) SaveFile(filename string, origianlFileName string, seasonAndEpisode string) {
+	parsedFileName := strings.ReplaceAll(filename, " ", ".")
+	newName := fmt.Sprintf("%s_%s", parsedFileName, seasonAndEpisode)
+	db.storage.Write(tableName, newName, FileItem{
+		Name:             newName,
 		OrigianlFileName: origianlFileName,
 		Date:             time.Now(),
 	})
