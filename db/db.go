@@ -14,11 +14,9 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
-var tableName = "downloadedItems"
 var dbUserName = os.Getenv("MONGO_INITDB_ROOT_USERNAME")
 var dbUserPassword = os.Getenv("MONGO_INITDB_ROOT_PASSWORD")
-var dbName = os.Getenv("MONGO_INITDB_DATABASE")
-var mongoUrl = fmt.Sprintf("mongodb://%s:%s@127.0.0.1:27017/%s", dbUserName, dbUserPassword, dbName)
+var mongoUrl = fmt.Sprintf("mongodb://%s:%s@mongo", dbUserName, dbUserPassword)
 
 type DB struct {
 	Storage  *mongo.Client
@@ -26,25 +24,18 @@ type DB struct {
 	CTX      context.Context
 }
 
-type FileItem struct {
-	Name             string
-	OrigianlFileName string
-	FileMoved        bool
-	Date             time.Time
-	SeasonAndEpisode string
-}
-
 func NewDb() *DB {
 
 	if dbUserName == "" {
 		mongoUrl = "mongodb://127.0.0.1:27017"
 	}
-	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI("mongodb://localhost:27017"))
+	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(mongoUrl))
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	if err := client.Ping(context.TODO(), readpref.Primary()); err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
@@ -53,8 +44,8 @@ func NewDb() *DB {
 		log.Fatal(err)
 	}
 
-	quickstartDatabase := client.Database("torrents")
-	episodesCollection := quickstartDatabase.Collection("episodes")
+	torrentDb := createDb(client)
+	episodesCollection := createCollection(torrentDb, "episodes")
 
 	newDb := DB{
 		Storage:  client,
@@ -65,6 +56,12 @@ func NewDb() *DB {
 	return &newDb
 }
 
+func createCollection(db *mongo.Database, collectionName string) *mongo.Collection {
+	return db.Collection(collectionName)
+}
+func createDb(client *mongo.Client) *mongo.Database {
+	return client.Database("torrent")
+}
 func (db *DB) CheckDownloadedName(name string, seasonAndEpisode string) bool {
 
 	parsedFileName := strings.ReplaceAll(name, " ", ".")
@@ -96,5 +93,3 @@ func (db *DB) SaveFile(filename string, origianlFileName string, seasonAndEpisod
 	log.Printf("Saving new file: %s", filename)
 
 }
-
-// todo test run
