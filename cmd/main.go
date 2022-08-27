@@ -12,6 +12,7 @@ import (
 
 func main() {
 	db := localDB.NewDb()
+	defer db.Storage.Disconnect(db.CTX)
 	s := gocron.NewScheduler(time.UTC)
 	scrapper := *rssScrapper.NewScrapper()
 	scrapper.AddListeners()
@@ -26,3 +27,5 @@ func main() {
 	<-sig
 
 }
+
+// mongo gets disconnected for some reason
