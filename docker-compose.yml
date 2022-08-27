@@ -6,7 +6,6 @@ services:
     environment:
       - MONGO_INITDB_ROOT_USERNAME=root
       - MONGO_INITDB_ROOT_PASSWORD=root
-      - MONGO_INITDB_DATABASE=torrents
 
     volumes:
       - ./mongo-volume:/app/db/data/mdb  
