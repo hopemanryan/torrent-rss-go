@@ -1,6 +1,9 @@
 package main
 
 import (
+	"context"
+	"go.mongodb.org/mongo-driver/mongo"
+	"log"
 	"os"
 	"os/signal"
 	"time"
@@ -12,7 +15,12 @@ import (
 
 func main() {
 	db := localDB.NewDb()
-	defer db.Storage.Disconnect(db.CTX)
+	defer func(Storage *mongo.Client, ctx context.Context) {
+		err := Storage.Disconnect(ctx)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+	}(db.Storage, db.CTX)
 	s := gocron.NewScheduler(time.UTC)
 	scrapper := *rssScrapper.NewScrapper()
 	scrapper.AddListeners()

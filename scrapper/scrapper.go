@@ -19,7 +19,7 @@ var TorrentLimitToken = "TORRENT_LIMIT"
 var VideoQualityToken = "QUIALITY"
 var baseURL = "https://www.1377x.to"
 var defaultDownloadDir = "./download"
-var videoQueality = "1080p"
+var videoQuality = "1080p"
 
 type Scrapper struct {
 	Url           string
@@ -57,9 +57,13 @@ func (s *Scrapper) AddListeners() {
 
 		for _, link := range links {
 			if strings.Contains(link, "/torrent") {
-				if strings.Contains(link, videoQueality) {
+				if strings.Contains(link, videoQuality) {
 					log.Printf("Visit webpage: %s ", link)
-					s.Browser.Visit(fmt.Sprintf("%s/%s", baseURL, link))
+					err := s.Browser.Visit(fmt.Sprintf("%s/%s", baseURL, link))
+
+					if err != nil {
+						log.Printf("%s , url could not open", link)
+					}
 				}
 			}
 		}
@@ -76,8 +80,12 @@ func (s *Scrapper) AddListeners() {
 
 }
 func (s *Scrapper) StartScrap(db *localDB.DB) {
-	s.Browser.Visit(s.Url)
+	err := s.Browser.Visit(s.Url)
 	defer s.TorrentClient.Close()
+
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 
 	for _, link := range s.AllLinks {
 		t, _ := s.TorrentClient.AddMagnet(link)
@@ -126,5 +134,5 @@ func getLimitFromEnv() {
 }
 
 func getVideoQualityFromEnv() {
-	videoQueality = os.Getenv(VideoQualityToken)
+	videoQuality = os.Getenv(VideoQualityToken)
 }
