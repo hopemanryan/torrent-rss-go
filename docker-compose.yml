@@ -25,6 +25,7 @@ services:
       - TORRENT_LIMIT=3
       - MONGO_INITDB_ROOT_USERNAME=root
       - MONGO_INITDB_ROOT_PASSWORD=root
+      - MONGO_INITDB_DATABASE=torrent
     depends_on:
       - mongo  
 
