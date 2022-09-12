@@ -1,11 +1,16 @@
 package scrappertorrentclient
 
-import "github.com/anacrolix/torrent"
+import (
+	"fmt"
+	"time"
+
+	"github.com/anacrolix/torrent"
+)
 
 var defaultDownloadDir = "./download"
 
 type TorrentClient struct {
-	client *torrent.Client
+	Client *torrent.Client
 }
 
 func NewTorrentScrapperClient() *TorrentClient {
@@ -13,6 +18,18 @@ func NewTorrentScrapperClient() *TorrentClient {
 	defaultConfig.DataDir = defaultDownloadDir
 	c, _ := torrent.NewClient(defaultConfig)
 	return &TorrentClient{
-		client: c,
+		Client: c,
 	}
+}
+
+func (t *TorrentClient) AddMagnet(magent string) {
+
+	newMagent, _ := t.Client.AddMagnet(magent)
+	<-newMagent.GotInfo()
+	newMagent.DownloadAll()
+	for newMagent.BytesCompleted() != newMagent.Info().TotalLength() {
+		fmt.Printf("%d / %d \n", newMagent.BytesCompleted(), newMagent.Info().TotalLength())
+		time.Sleep(time.Second * 5)
+	}
+
 }

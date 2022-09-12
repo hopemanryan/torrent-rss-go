@@ -1,4 +1,4 @@
-FROM golang:1.19-alpine3.16 
+FROM golang:1.19-alpine3.16 as base 
 WORKDIR /app
 
 RUN apk update

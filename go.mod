@@ -9,6 +9,8 @@ require (
 )
 
 require (
+	github.com/cespare/xxhash/v2 v2.1.2 // indirect
+	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/go-redis/redis v6.15.9+incompatible // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/jcelliott/lumber v0.0.0-20160324203708-dd349441af25 // indirect
@@ -52,6 +54,7 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dustin/go-humanize v1.0.0 // indirect
 	github.com/edsrzf/mmap-go v1.1.0 // indirect
+	github.com/go-redis/redis/v8 v8.11.5
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/gocolly/colly v1.2.0
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect

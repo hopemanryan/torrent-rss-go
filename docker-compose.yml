@@ -1,15 +1,14 @@
-version: '3'
 services:
 
   redis:
     container_name: cache
-    image: redis:latest 
+    image: redis:6.2-alpine
     restart: always
     ports:
       - '6379:6379'
     command: redis-server --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
     volumes: 
-      - cache:/data
+      - cache:/cache
   mongo:
     image: mongo
     container_name: mongo
@@ -28,6 +27,10 @@ services:
     build: 
       context: .
       dockerfile: torrent.dockerfile
+    environment: 
+      - REDIS_HOST=cache
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81  
     depends_on:
       - redis    
 
@@ -45,6 +48,9 @@ services:
       - MONGO_INITDB_ROOT_USERNAME=root
       - MONGO_INITDB_ROOT_PASSWORD=root
       - MONGO_INITDB_DATABASE=torrent
+      - REDIS_HOST=cache
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81  
     depends_on:
       - mongo  
       - torrent
