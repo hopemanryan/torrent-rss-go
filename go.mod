@@ -9,6 +9,7 @@ require (
 )
 
 require (
+	github.com/go-redis/redis v6.15.9+incompatible // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/jcelliott/lumber v0.0.0-20160324203708-dd349441af25 // indirect
 	github.com/klauspost/compress v1.15.9 // indirect

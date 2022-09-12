@@ -1,4 +1,15 @@
+version: '3'
 services:
+
+  redis:
+    container_name: cache
+    image: redis:latest 
+    restart: always
+    ports:
+      - '6379:6379'
+    command: redis-server --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
+    volumes: 
+      - cache:/data
   mongo:
     image: mongo
     container_name: mongo
@@ -12,11 +23,19 @@ services:
     ports: 
       - 27017:27017  
 
+  torrent: 
+    container_name: torrent-client
+    build: 
+      context: .
+      dockerfile: torrent.dockerfile
+    depends_on:
+      - redis    
+
   scrapper:
     container_name: torrent-scrapper
     build: 
       context: .
-      dockerfile: Dockerfile
+      dockerfile: dockerfile
     volumes:
       - asset-volume:/app/download
       - db:/app/db/data
@@ -28,6 +47,8 @@ services:
       - MONGO_INITDB_DATABASE=torrent
     depends_on:
       - mongo  
+      - torrent
+    
 
   
   plex:
@@ -59,5 +80,7 @@ services:
 volumes:
   asset-volume: 
   db:
+  cache:
+    driver: local
 
 
