@@ -2,11 +2,12 @@ package main
 
 import (
 	"context"
-	"go.mongodb.org/mongo-driver/mongo"
 	"log"
 	"os"
 	"os/signal"
 	"time"
+
+	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/go-co-op/gocron"
 	localDB "github.com/hopemanryan/torrent-rss/db"
@@ -35,5 +36,3 @@ func main() {
 	<-sig
 
 }
-
-// mongo gets disconnected for some reason

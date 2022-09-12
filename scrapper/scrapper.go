@@ -1,17 +1,17 @@
 package rssScrapper
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
 	"regexp"
 	"strconv"
 	"strings"
-	"time"
 
-	"github.com/anacrolix/torrent"
 	"github.com/gocolly/colly"
 	localDB "github.com/hopemanryan/torrent-rss/db"
+	redisScrapper "github.com/hopemanryan/torrent-rss/redis"
 )
 
 var limit = 20
@@ -22,10 +22,9 @@ var defaultDownloadDir = "./download"
 var videoQuality = "1080p"
 
 type Scrapper struct {
-	Url           string
-	Browser       *colly.Collector
-	TorrentClient *torrent.Client
-	AllLinks      []string
+	Url      string
+	Browser  *colly.Collector
+	AllLinks []string
 }
 
 func NewScrapper() *Scrapper {
@@ -37,14 +36,9 @@ func NewScrapper() *Scrapper {
 
 	scrapInstance := *colly.NewCollector()
 
-	defaultConfig := torrent.NewDefaultClientConfig()
-	defaultConfig.DataDir = defaultDownloadDir
-	c, _ := torrent.NewClient(defaultConfig)
-
 	scrapper := Scrapper{
-		Url:           fmt.Sprintf("%s/trending/w/tv/", baseURL),
-		Browser:       &scrapInstance,
-		TorrentClient: c,
+		Url:     fmt.Sprintf("%s/trending/w/tv/", baseURL),
+		Browser: &scrapInstance,
 	}
 
 	return &scrapper
@@ -81,38 +75,26 @@ func (s *Scrapper) AddListeners() {
 }
 func (s *Scrapper) StartScrap(db *localDB.DB) {
 	err := s.Browser.Visit(s.Url)
-	defer s.TorrentClient.Close()
 
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 
 	for _, link := range s.AllLinks {
-		t, _ := s.TorrentClient.AddMagnet(link)
-		<-t.GotInfo()
-		info := cleanName(t.Info().Name)
+		info := cleanName(link)
 		re, _ := regexp.Compile(`S\d\dE\d\d`)
-		seasonAndEpisode := re.FindString(t.Info().Name)
+		seasonAndEpisode := re.FindString(link)
 		// check why file is downloading even though it returns true
 		isDownloaded := db.CheckDownloadedName(info, seasonAndEpisode)
 
 		if !isDownloaded {
-			db.SaveFile(info, t.Info().Name, seasonAndEpisode)
-			t.DownloadAll()
 
-			fmt.Printf("Total Length: %d", t.Info().TotalLength())
-			for t.BytesCompleted() != t.Info().TotalLength() {
-				fmt.Printf("%d / %d \n", t.BytesCompleted(), t.Info().TotalLength())
-				time.Sleep(time.Second * 5)
-			}
+			clinet := redisScrapper.ConnectToRedis()
+			ctx := context.Background()
+			clinet.Publish(ctx, "new-magent", link)
+			db.SaveFile(info, link, seasonAndEpisode)
 		}
-
 	}
-	s.TorrentClient.WaitAll()
-
-	log.Print("Files Downloaded")
-	s.AllLinks = nil
-	log.Print("Links have been clearedm")
 
 }
 
