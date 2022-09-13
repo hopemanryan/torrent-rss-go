@@ -33,6 +33,9 @@ services:
       - REDIS_PASSWORD=eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81  
     depends_on:
       - redis    
+    volumes:
+      - asset-volume:/app/download
+  
 
   scrapper:
     container_name: torrent-scrapper
