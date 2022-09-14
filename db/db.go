@@ -78,18 +78,16 @@ func (db *DB) CheckDownloadedName(name string, seasonAndEpisode string) bool {
 	return episode != nil
 }
 
-func (db *DB) SaveFile(filename string, origianlFileName string, seasonAndEpisode string) {
-	parsedFileName := strings.ReplaceAll(filename, " ", ".")
-	newName := fmt.Sprintf("%s_%s", parsedFileName, seasonAndEpisode)
+func (db *DB) SaveFile(origianlFileName string, seasonAndEpisode string) {
+	newName := fmt.Sprintf("%s_%s", origianlFileName, seasonAndEpisode)
 	_, err := db.episodes.InsertOne(context.TODO(), bson.M{
-		"fileName":         newName,
-		"OrigianlFileName": origianlFileName,
-		"Date":             time.Now(),
+		"fileName": newName,
+		"Date":     time.Now(),
 	})
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 
-	log.Printf("Saving new file: %s", filename)
+	log.Printf("Saving new file: %s", newName)
 
 }

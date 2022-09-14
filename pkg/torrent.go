@@ -25,7 +25,7 @@ func main() {
 	println("Subscription Done")
 	for msg := range ch {
 		fmt.Println(msg.Channel, msg.Payload)
-		client.AddMagnet(msg.Payload)
+		go client.AddMagnet(msg.Payload)
 	}
 
 }
