@@ -31,6 +31,7 @@ func main() {
 
 		scrapper.StartScrap(db)
 	})
+	scrapper.StartScrap(db)
 
 	fmt.Printf("%v", s.Jobs())
 	s.StartAsync()

@@ -17,7 +17,6 @@ func main() {
 
 	redisInstance := redisScrapper.ConnectToRedis()
 	fmt.Printf("%v", redisInstance)
-	http.ListenAndServe(":8090", nil)
 	println("Redis connected")
 	subscriber := redisInstance.Subscribe(ctx, "new-magent")
 
@@ -27,5 +26,7 @@ func main() {
 		fmt.Println(msg.Channel, msg.Payload)
 		go client.AddMagnet(msg.Payload)
 	}
+
+	http.ListenAndServe(":8090", nil)
 
 }
