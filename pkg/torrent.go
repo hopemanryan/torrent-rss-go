@@ -3,8 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
-
 	torrentScrapper "github.com/hopemanryan/torrent-rss/torrent"
+	"net/http"
 
 	redisScrapper "github.com/hopemanryan/torrent-rss/redis"
 )
@@ -17,12 +17,12 @@ func main() {
 
 	redisInstance := redisScrapper.ConnectToRedis()
 	fmt.Printf("%v", redisInstance)
+	http.ListenAndServe(":8090", nil)
 	println("Redis connected")
 	subscriber := redisInstance.Subscribe(ctx, "new-magent")
 
 	ch := subscriber.Channel()
 
-	println("Subscription Done")
 	for msg := range ch {
 		fmt.Println(msg.Channel, msg.Payload)
 		go client.AddMagnet(msg.Payload)

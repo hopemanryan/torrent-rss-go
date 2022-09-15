@@ -2,9 +2,9 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
-	"os"
-	"os/signal"
+	"net/http"
 	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
@@ -22,17 +22,18 @@ func main() {
 			log.Fatal(err.Error())
 		}
 	}(db.Storage, db.CTX)
-	s := gocron.NewScheduler(time.UTC)
 	scrapper := *rssScrapper.NewScrapper()
 	scrapper.AddListeners()
-	scrapper.StartScrap(db)
+	s := gocron.NewScheduler(time.UTC)
+	fmt.Printf("%v", s)
+
 	s.Every(1).Days().At("07:00").Do(func() {
 
 		scrapper.StartScrap(db)
 	})
 
-	sig := make(chan os.Signal)
-	signal.Notify(sig, os.Interrupt, os.Kill)
-	<-sig
+	fmt.Printf("%v", s.Jobs())
+	s.StartAsync()
+	http.ListenAndServe(":8090", nil)
 
 }

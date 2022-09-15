@@ -14,7 +14,7 @@ import (
 	redisScrapper "github.com/hopemanryan/torrent-rss/redis"
 )
 
-var limit = 20
+var limit = 3
 var TorrentLimitToken = "TORRENT_LIMIT"
 var VideoQualityToken = "QUIALITY"
 var baseURL = "https://www.1377x.to"
@@ -37,7 +37,7 @@ func NewScrapper() *Scrapper {
 
 	println(limit)
 
-	scrapInstance := *colly.NewCollector()
+	scrapInstance := *colly.NewCollector(colly.AllowURLRevisit())
 
 	scrapper := Scrapper{
 		Url:     fmt.Sprintf("%s/trending/w/tv/", baseURL),
@@ -89,6 +89,7 @@ func (s *Scrapper) AddListeners() {
 
 }
 func (s *Scrapper) StartScrap(db *localDB.DB) {
+
 	err := s.Browser.Visit(s.Url)
 
 	if err != nil {
