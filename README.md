@@ -14,3 +14,9 @@ Features
 
 localhost:32400/web  to access plex data 
 (plex applications on same wifi will conenct automatically, plex magic)
+
+ 
+TODO 
+
+[ ] add min quality 
+[ ] add allow skip title 

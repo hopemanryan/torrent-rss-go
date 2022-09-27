@@ -18,7 +18,7 @@ var limit = 3
 var TorrentLimitToken = "TORRENT_LIMIT"
 var VideoQualityToken = "QUIALITY"
 var baseURL = "https://www.1377x.to"
-var videoQuality = "1080p"
+var skipQuality = []string{"720p", "WEBRip", "WEB-x264"}
 
 type Link struct {
 	Name string
@@ -54,7 +54,7 @@ func (s *Scrapper) AddListeners() {
 
 		for _, link := range links {
 			if strings.Contains(link, "/torrent") {
-				if strings.Contains(link, videoQuality) {
+				if checkUrlContains(link) {
 					log.Printf("Visit webpage: %s ", link)
 					err := s.Browser.Visit(fmt.Sprintf("%s/%s", baseURL, link))
 
@@ -143,4 +143,15 @@ func getLimitFromEnv() {
 
 func getVideoQualityFromEnv() {
 	videoQuality = os.Getenv(VideoQualityToken)
+}
+
+func checkUrlContains(link string) bool {
+	var isValid = true
+	for _, quality := range skipQuality {
+		if strings.Contains(link, quality) {
+			isValid = false
+		}
+	}
+
+	return isValid
 }
