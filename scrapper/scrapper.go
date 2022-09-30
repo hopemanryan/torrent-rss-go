@@ -4,9 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
 	"regexp"
-	"strconv"
 	"strings"
 
 	"github.com/gocolly/colly"
@@ -14,9 +12,6 @@ import (
 	redisScrapper "github.com/hopemanryan/torrent-rss/redis"
 )
 
-var limit = 3
-var TorrentLimitToken = "TORRENT_LIMIT"
-var VideoQualityToken = "QUIALITY"
 var baseURL = "https://www.1377x.to"
 var skipQuality = []string{"720p", "WEBRip", "WEB-x264"}
 
@@ -32,11 +27,6 @@ type Scrapper struct {
 
 func NewScrapper() *Scrapper {
 
-	getLimitFromEnv()
-	getVideoQualityFromEnv()
-
-	println(limit)
-
 	scrapInstance := *colly.NewCollector(colly.AllowURLRevisit())
 
 	scrapper := Scrapper{
@@ -48,7 +38,6 @@ func NewScrapper() *Scrapper {
 }
 
 func (s *Scrapper) AddListeners() {
-	var count = 0
 	s.Browser.OnHTML(".featured-list", func(e *colly.HTMLElement) {
 		links := e.ChildAttrs("a", "href")
 
@@ -74,13 +63,10 @@ func (s *Scrapper) AddListeners() {
 		if rawFileName != "" {
 			originalName := getCleanTvShowName(rawFileName)
 			if originalName != "" {
-				if count < limit {
-					count = count + 1
-					s.AllLinks = append(s.AllLinks, Link{
-						Name: originalName,
-						Url:  magent,
-					})
-				}
+				s.AllLinks = append(s.AllLinks, Link{
+					Name: originalName,
+					Url:  magent,
+				})
 			}
 
 		}
@@ -129,20 +115,6 @@ func getCleanTvShowName(rawString string) string {
 		return orirginalFileGroups[1]
 	}
 	return ""
-}
-func getLimitFromEnv() {
-	osLimit := os.Getenv(TorrentLimitToken)
-
-	if osLimit != "" {
-		i, err := strconv.Atoi(osLimit)
-		if err != nil {
-			limit = i
-		}
-	}
-}
-
-func getVideoQualityFromEnv() {
-	videoQuality = os.Getenv(VideoQualityToken)
 }
 
 func checkUrlContains(link string) bool {

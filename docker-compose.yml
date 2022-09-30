@@ -46,14 +46,13 @@ services:
       - asset-volume:/app/download
       - db:/app/db/data
     environment:
-      - QUIALITY=1080p  
-      - TORRENT_LIMIT=3
       - MONGO_INITDB_ROOT_USERNAME=root
       - MONGO_INITDB_ROOT_PASSWORD=root
       - MONGO_INITDB_DATABASE=torrent
       - REDIS_HOST=cache
       - REDIS_PORT=6379
-      - REDIS_PASSWORD=eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81  
+      - REDIS_PASSWORD=eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
+      - ENV=prod
     depends_on:
       - mongo  
       - torrent

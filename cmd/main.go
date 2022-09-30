@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
@@ -31,7 +32,10 @@ func main() {
 
 		scrapper.StartScrap(db)
 	})
-	scrapper.StartScrap(db)
+
+	if os.Getenv("ENV") != "" {
+		scrapper.StartScrap(db)
+	}
 
 	fmt.Printf("%v", s.Jobs())
 	s.StartAsync()
