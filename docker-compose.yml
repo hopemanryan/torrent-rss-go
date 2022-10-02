@@ -84,6 +84,17 @@ services:
       - 32413:32413/udp
       - 32414:32414/udp
 
+  gui:
+    container_name: gui
+    build:
+      context: .
+      dockerfile: ./gui-app/dev.dockerfile
+    volumes:
+      -  asset-volume:/data/tvshows
+      - /usr/src/app/node_modules
+
+    ports:
+      - 3000:3000
 
 volumes:
   asset-volume: 
