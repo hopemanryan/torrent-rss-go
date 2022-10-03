@@ -8,6 +8,7 @@ export default function Home() {
         try {
             const res = await fetch('/api/hello')
             const {files: rawFiles } = await res.json()
+            console.log(rawFiles)
             setFiles(rawFiles)
         }   catch (e) {
             console.log(e)
@@ -16,11 +17,11 @@ export default function Home() {
 
     const deleteItem = async (file) => {
         try {
-            fetch("/api/items/delete", {
-                body: {
+            await fetch("/api/items/delete", {
+                body: JSON.stringify({
                     fileName: file
-                },
-                method: 'post'
+                }),
+                method: 'POST'
             })
             setFiles(files.filter(x => x !== file ))
 
