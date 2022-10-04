@@ -139,7 +139,7 @@ func checkUrlContains(link string) bool {
 
 func readToDisplayUsingFile1() []string {
 
-	readFile, err := os.Open("blacklist.text")
+	readFile, err := os.Open("scrapper/blacklist.text")
 
 	if err != nil {
 		fmt.Println(err)
@@ -153,7 +153,6 @@ func readToDisplayUsingFile1() []string {
 	}
 
 	readFile.Close()
-	fmt.Println(fileLines)
 
 	return fileLines
 }
