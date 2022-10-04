@@ -1,9 +1,11 @@
 package rssScrapper
 
 import (
+	"bufio"
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"regexp"
 	"strings"
 
@@ -118,6 +120,7 @@ func getCleanTvShowName(rawString string) string {
 }
 
 func checkUrlContains(link string) bool {
+	blacklist := readToDisplayUsingFile1()
 	var isValid = true
 	for _, quality := range skipQuality {
 		if strings.Contains(link, quality) {
@@ -125,5 +128,32 @@ func checkUrlContains(link string) bool {
 		}
 	}
 
+	for _, blacklistItem := range blacklist {
+		if strings.Contains(link, blacklistItem) {
+			isValid = false
+		}
+	}
+
 	return isValid
+}
+
+func readToDisplayUsingFile1() []string {
+
+	readFile, err := os.Open("blacklist.text")
+
+	if err != nil {
+		fmt.Println(err)
+	}
+	fileScanner := bufio.NewScanner(readFile)
+	fileScanner.Split(bufio.ScanLines)
+	var fileLines []string
+
+	for fileScanner.Scan() {
+		fileLines = append(fileLines, fileScanner.Text())
+	}
+
+	readFile.Close()
+	fmt.Println(fileLines)
+
+	return fileLines
 }
