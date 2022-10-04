@@ -7,7 +7,7 @@ services:
     ports:
       - '6379:6379'
     command: redis-server --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
-    volumes: 
+    volumes:
       - cache:/cache
   mongo:
     image: mongo
@@ -18,28 +18,28 @@ services:
       - MONGO_INITDB_ROOT_PASSWORD=root
 
     volumes:
-      - ./mongo-volume:/app/db/data/mdb  
-    ports: 
-      - 27017:27017  
+      - ./mongo-volume:/app/db/data/mdb
+    ports:
+      - 27017:27017
 
-  torrent: 
+  torrent:
     container_name: torrent-client
-    build: 
+    build:
       context: .
       dockerfile: torrent.dockerfile
-    environment: 
+    environment:
       - REDIS_HOST=cache
       - REDIS_PORT=6379
-      - REDIS_PASSWORD=eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81  
+      - REDIS_PASSWORD=eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
     depends_on:
-      - redis    
+      - redis
     volumes:
       - asset-volume:/app/download
-  
+
 
   scrapper:
     container_name: torrent-scrapper
-    build: 
+    build:
       context: .
       dockerfile: dockerfile
     volumes:
@@ -54,11 +54,11 @@ services:
       - REDIS_PASSWORD=eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
       - ENV=prod
     depends_on:
-      - mongo  
+      - mongo
       - torrent
-    
 
-  
+
+
   plex:
     image: lscr.io/linuxserver/plex:latest
     container_name: plexms
@@ -84,6 +84,17 @@ services:
       - 32413:32413/udp
       - 32414:32414/udp
 
+  gui:
+    container_name: gui
+    build:
+      context: .
+      dockerfile: ./gui-app/dev.dockerfile
+    volumes:
+      -  asset-volume:/data/tvshows
+      - /usr/src/app/node_modules
+      - ./gui-app:/usr/app
+    ports:
+      - 3000:3000
 
 volumes:
   asset-volume: 
