@@ -154,5 +154,7 @@ func readToDisplayUsingFile1() []string {
 
 	readFile.Close()
 
+	fmt.Printf(" blacklist items %v", fileLines)
+
 	return fileLines
 }
